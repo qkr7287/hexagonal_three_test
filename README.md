@@ -181,7 +181,20 @@ window 'resize'
 
 ## 다이어그램
 
+> **Mermaid 줄바꿈:** `\n`이 아니라 `""` 안에서 엔터로 줄바꿈하면 적용됩니다.
+
 ### 아키텍처(헥사고날) 개요
+
+**어느 기능이 어느 스크립트에 들어가 있는지**
+
+| 스크립트 | 들어가 있는 기능 |
+|----------|------------------|
+| `src/main.ts` | 엔진·팩토리 생성 후 `runScene(container, engine, factory)` 호출. 어댑터 조립과 앱 진입점. |
+| `src/adapters/driving/BrowserBootstrap.ts` | `runScene()` — 컨테이너·엔진·팩토리를 받아 `MainLoop` 생성, `loop.start(factory)` 호출. 브라우저 진입 어댑터. |
+| `src/application/MainLoop.ts` | `start()`, `tick()`, `onResize()` — 엔진 초기화, 선택적 기본 메시 추가, 렌더 루프, 창 리사이즈 처리. 포트에만 의존하는 메인 로직. |
+| `src/domain/ports/*.ts` | `IEngine`, `IObjectFactory` 등 인터페이스 정의. 메인 로직이 의존하는 계약만 둠. |
+| `src/adapters/driven/threejs/ThreeEngine.ts` | `IEngine` 구현 — `init()`, `getScene()`, `getRenderer()`, `update()`, `resize()`, `dispose()` 등. Three.js 씬·카메라·렌더러 래핑. |
+| `src/adapters/driven/threejs/ThreeObjectFactory.ts` | `IObjectFactory` 구현 — `createCube()`, `createBox()` 등. Three.js 메시 생성. |
 
 ```mermaid
 flowchart TB
@@ -216,6 +229,16 @@ flowchart TB
 
 ### 기동 시퀀스
 
+**어느 기능이 어느 스크립트에 들어가 있는지**
+
+| 스크립트 | 들어가 있는 기능 |
+|----------|------------------|
+| `src/main.ts` | `runScene(container, engine, factory)` 호출. 위 시퀀스의 시작점. |
+| `src/adapters/driving/BrowserBootstrap.ts` | `runScene()` — `new MainLoop(engine, container)`, `loop.start(factory)` 호출. M→B, B→L 흐름. |
+| `src/application/MainLoop.ts` | `start(factory)` — `engine.init()`, `factory.createCube()`·`getScene().add()`, `onResize()`, `tick()` 호출. L→E, L→F, 루프 시작. |
+| `src/adapters/driven/threejs/ThreeEngine.ts` | `init(container)`(캔버스 부착·OrbitControls), `resize()`, `update()`, `getRenderer().render()`. E 역할. |
+| `src/adapters/driven/threejs/ThreeObjectFactory.ts` | `createCube(1)` — 큐브 메시 생성 후 반환. F 역할. |
+
 ```mermaid
 sequenceDiagram
   participant M as main.ts
@@ -244,6 +267,12 @@ sequenceDiagram
 ```
 
 ### 매 프레임 루프
+
+**어느 기능이 어느 스크립트에 들어가 있는지**
+
+| 스크립트 | 들어가 있는 기능 |
+|----------|------------------|
+| `src/application/MainLoop.ts` | `tick()` — 다음 프레임을 위해 `requestAnimationFrame(boundTick)` 예약, `engine.update()`(OrbitControls 등 갱신), `engine.getRenderer().render()` 한 프레임 그리기. 위 플로우 A→B, A→C, A→D 전체가 이 메서드 안에 있음. |
 
 ```mermaid
 flowchart LR
