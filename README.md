@@ -187,11 +187,13 @@ window 'resize'
 flowchart TB
   subgraph driving["드라이빙 (진입)"]
     main["main.ts"]
-    bootstrap["BrowserBootstrap\nrunScene()"]
+    bootstrap["BrowserBootstrap
+    runScene()"]
   end
 
   subgraph application["애플리케이션 (메인 로직)"]
-    loop["MainLoop\nstart / tick / onResize"]
+    loop["MainLoop
+    start / tick / onResize"]
   end
 
   subgraph ports["도메인 (포트)"]
@@ -245,7 +247,8 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-  A["tick()"] --> B["requestAnimationFrame\n예약"]
+  A["tick()"] --> B["requestAnimationFrame
+  예약"]
   A --> C["engine.update()"]
   A --> D["getRenderer().render()"]
   C --> D
